@@ -1,5 +1,5 @@
 ---
-abstract: 'Perl extention to do something'
+abstract: 'Validation module for nexted array ,hash ,scalar  like FormValidator::Simple'
 author:
   - 'S2 <s2otsa@hotmail.com>'
 build_requires:
@@ -27,4 +27,4 @@ requires:
 resources:
   license: http://dev.perl.org/licenses/
   repository: git://github.com/S2/p5-data--compare--type.git
-version: 0.01
+version: 0.02

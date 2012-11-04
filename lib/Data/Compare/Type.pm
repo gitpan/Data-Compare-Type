@@ -7,9 +7,9 @@ use Data::Compare::Type::CharTypes;
 use Carp;
 use Test::More;
 use Data::Dumper;
-use class::load;
+use Class::Load;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 # static values
 sub HASHREF {'excepted hash ref'};
@@ -213,7 +213,7 @@ __END__
 
 =head1 NAME
 
-Data::Compare::Type - Perl extention to do something
+Data::Compare::Type - Validation module for nexted array ,hash ,scalar  like FormValidator::Simple
 
 =head1 VERSION
 
@@ -222,18 +222,123 @@ This document describes Data::Compare::Type version 0.01.
 =head1 SYNOPSIS
 
     use Data::Compare::Type;
+    $v = Data::Compare::Type->new();
+    $parameters = { id => 100};
+    $rule = {id => 'INT'};
+    $v->check($parameters , $rule)
+    
+    if($v->has_error){
+        for my $error(@{$v->get_error}){
+            die($error->{param_name} . ' is not ' . $error->{error});
+        }
+    }
 
 =head1 DESCRIPTION
 
-# TODO
+    You can check some value types in Scalar , Arrayref , Hashref.
 
-=head1 INTERFACE
+=head1 Functions
 
-=head2 Functions
+=head2 check
 
-=head3 C<< hello() >>
+  $v = Data::Compare::Type->new();
+  $v->check(111 , "INT"); # return true
+  $v->check(111 , "STRING"); # return false and $v->has_error is true 
+  $v->check([111 , 1222, 333] , ["INT"]);# return true
+  $v->check({ hoge => 'fuga'},{hoge => "ASCII"});# return true
+  $v->check([{id => 111,id2=> 22.2 },{id=> 1222 , id2=> 1.11},{id=> 333 , id2=> 44.44}] , [{id =>"INT",id2 => "DECIMAL"}]);# return true
 
-# TODO
+=head2 has_error
+
+  $v->check({hoge =>  "hogehogehogehoge" },{hoge=> ["ASCII","NOT_BLANK" , ['LENGTH' , 1 , 15]]});
+  if($v->has_error){
+      # error handling routine
+  }
+
+=head2 get_error
+
+  $v->check({hoge =>  "hogehogehogehoge" },{hoge=> ["ASCII","NOT_BLANK" , ['LENGTH' , 1 , 15]]});
+  if($v->has_error){
+      use Data::Dumper;
+      warn Dumper $v->get_error;
+      #$VAR1 = [
+      #  {
+      #    'min_value' => 1,
+      #    'error' => 'LENGTH',
+      #    'position' => '$param->{hoge}',
+      #    'max_value' => 15,
+      #    'param_name' => 'hoge',
+      #    'message' => 'LENGTH IS WRONG'
+      #  }
+      #];
+  }
+
+=head1 Check Methods
+
+=head2 INT
+
+allow integer ; 10 , 0 , -10
+
+=head2 STRING
+
+allow Strings
+
+=head2 ASCII
+
+allow alphabet and ascii symbols
+
+=head2 DECIMAL
+
+allow integer and decimals ; 10 1,0 , 0 , -10 , -1.0
+
+=head2 URL
+
+allow ^http|^https
+
+=head2 EMAIL
+
+used Email::Valid;
+
+=head2 DATETIME
+
+    '%Y-%m-%d %H:%M:%S'
+    '%Y/%m/%d %H:%M:%S'
+    '%Y-%m-%d %H-%M-%S'
+    '%Y/%m/%d %H-%M-%S'
+
+=head2 DATE
+
+    '%Y-%m-%d'
+    '%Y/%m/%d'
+
+=head2 TIME
+
+    '%H-%M-%S'
+    '%H-%M-%S'
+
+=head2 LENGTH
+
+check value length
+    $rule = ["ASCII","NOT_BLANK" , ['LENGTH' , 1 , 8]]} # a , 
+    $v->check(['a'] , $rule) # true
+    $v->check(['abcdefghi'] , $rule) # false 
+
+    $rule = ["ASCII","NOT_BLANK" , ['LENGTH' , 4]]} # a , 
+    $v->check(['abc'] , $rule) # false 
+    $v->check(['abcd'] , $rule) # true
+    $v->check(['abcde'] , $rule) # false 
+
+=head2 BETWEEN
+
+check value 
+    $rule = ["INT",['BETWEEN' , 1 , 8]]} # a , 
+    $v->check([1] , $rule) # true
+    $v->check([3.1] , $rule) # true
+    $v->check([5] , $rule) # true
+    $v->check([7.9] , $rule) # true
+    $v->check([8] , $rule) # true
+    $v->check([9] , $rule) # false 
+    $v->check([0] , $rule) # false 
 
 =head1 DEPENDENCIES
 
