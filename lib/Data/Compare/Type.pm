@@ -9,7 +9,7 @@ use Test::More;
 use Data::Dumper;
 use Class::Load;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 # static values
 sub HASHREF {'excepted hash ref'};
@@ -76,8 +76,12 @@ sub _check{
             if($ref eq 'HASH'){
                 for(keys %$rule){
                     unless(exists $param->{$_}){
-                        if(_instr($rule->{$_},'NOT_BLANK')){
-                            $self->_set_error(HASHVALUE, $position, $_ ,'NOT_BLANK');
+                        if(ref $rule->{$_} eq 'ARRAY' and ref $rule->{$_}[0] eq 'ARRAY'){
+                            $self->_set_error(ARRAYREF, $position, $_ ,'NOT_BLANK');
+                        }else{
+                            if(_instr($rule->{$_},'NOT_BLANK')){
+                                $self->_set_error(HASHVALUE, $position, $_ ,'NOT_BLANK');
+                            }
                         }
                     }else{
                         $self->_check($param->{$_} , $rule->{$_} , $position . "->{$_}" , $_);
@@ -213,7 +217,7 @@ __END__
 
 =head1 NAME
 
-Data::Compare::Type - Validation module for nexted array ,hash ,scalar  like FormValidator::Simple
+Data::Compare::Type - Validation module for nested array ,hash ,scalar  like FormValidator::Simple
 
 =head1 VERSION
 
